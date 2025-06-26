@@ -8,17 +8,24 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+QUOTES_PATH = os.path.join(BASE_DIR, "quotes.json")
+
 
 @asynccontextmanager
-async def load_quotes(app: FastAPI):
-    BASE_DIR = os.path.dirname(__file__)
-    with open(os.path.join(BASE_DIR, "quotes.json")) as f:
-        app.state.quotes = json.load(f)["quotes"]
-        app.state.max_day = len(app.state.quotes)
+async def lifespan(app: FastAPI):
+    try:
+        with open(QUOTES_PATH, "r") as f:
+            app.state.quotes = json.load(f)["quotes"]
+            app.state.max_day = len(app.state.quotes)
+    except Exception as e:
+        print(f"Failed to load quotes.json: {e}")
+        app.state.quotes = ["Default quote in case of error."]
+        app.state.max_day = 1
     yield
 
 
-app = FastAPI(lifespan=load_quotes)
+app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
 
 
