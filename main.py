@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 @asynccontextmanager
 async def load_quotes(app: FastAPI):
     BASE_DIR = os.path.dirname(__file__)
-    with open(os.path.join(BASE_DIR, "quotes.json")) as f:
+    with open(os.path.join(BASE_DIR, "quotes.json"), "r") as f:
         app.state.quotes = json.load(f)["quotes"]
         app.state.max_day = len(app.state.quotes)
     yield
@@ -24,6 +24,8 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/")
 def read_root():
+    print(app.state.quotes)
+    print(app.state.max_day)
     return {"Hello": "World"}
 
 def get_quote(day: int = -1):
