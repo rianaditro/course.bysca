@@ -12,9 +12,15 @@ from fastapi.templating import Jinja2Templates
 @asynccontextmanager
 async def load_quotes(app: FastAPI):
     BASE_DIR = os.path.dirname(__file__)
-    with open(os.path.join(BASE_DIR, "quotes.json"), "r") as f:
-        app.state.quotes = json.load(f)["quotes"]
-        app.state.max_day = len(app.state.quotes)
+    try:
+        with open(os.path.join(BASE_DIR, "quotes.json"), "r") as f:
+            quotes_data = json.load(f)
+            app.state.quotes = quotes_data["quotes"]
+            app.state.max_day = len(app.state.quotes)
+    except Exception as e:
+        print(f"Failed to load quotes.json: {e}")
+        app.state.quotes = ["Default fallback quote."]
+        app.state.max_day = 1
     yield
 
 
